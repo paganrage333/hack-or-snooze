@@ -19,7 +19,7 @@ async function getAndShowStoriesOnStart() {
  * Returns the markup for the story.
  */
 
-function generateStoryMarkup(story) {
+function generateStoryMarkup(story, showDeleteBtn = false) {
   // console.debug("generateStoryMarkup", story);
 
   const hostName = story.getHostName();
@@ -28,6 +28,8 @@ function generateStoryMarkup(story) {
 
   return $(`
       <li id="${story.storyId}">
+        ${showDeleteBtn ? getDeleteBtnHTML() : ""}
+        ${showFav ? markFavorite(story, currentUser) : ""}
         <a href="${story.url}" target="a_blank" class="story-link">
           ${story.title}
         </a>
@@ -39,7 +41,7 @@ function generateStoryMarkup(story) {
 }
 
 //Make delete button
-function getDeleteButton(){
+function getDeleteButton() {
   return `
   <span class="trash-can">
     <i class="fas fa-trash-alt"></i>
@@ -84,7 +86,7 @@ async function deleteStory(evt) {
   await putUserStoriesOnPage();
 }
 
-$myStories.on("click", ".trash-can", deleteStory)
+$myStories.on("click", ".trash-can", deleteStory);
 
 async function submitNewStory(evt) {
   console.debug("submitNewStory");
@@ -93,8 +95,8 @@ async function submitNewStory(evt) {
   const title = $("#create-title").val();
   const author = $("#create-author").val();
   const url = $("#create-url").val();
-  const username = currentUser.username
-  const storyData = {title, author, url, username};
+  const username = currentUser.username;
+  const storyData = { title, author, url, username };
 
   const story = await storyList.addStory(currentUser, storyData);
   const $story = generateStoryMarkup(story);
@@ -114,30 +116,30 @@ function putUserStoriesOnPage() {
   $myStories.empty();
 
   if (currentUser.myStories.length === 0) {
-    $myStories.append("No stories have been added yet")
+    $myStories.append("No stories have been added yet");
   } else {
     for (let story of currentUser.myStories) {
       let $story = generateStoryMarkup(story, true);
-      $myStories.append($story)
+      $myStories.append($story);
     }
   }
 
   $myStories.show();
 }
 
-//display favorite list 
+//display favorite list
 
-function displayFavorites(){
+function displayFavorites() {
   console.debug("displayFavorites");
 
   $favoriteStories.empty();
 
   if (currentUser.favorites.length === 0) {
-    $favoriteStories.append("No favorites added")
+    $favoriteStories.append("No favorites added");
   } else {
     for (let story of currentUser.favorites) {
       const $story = generateStoryMarkup(story);
-      $favoriteStories.append($story)
+      $favoriteStories.append($story);
     }
   }
 
@@ -146,20 +148,20 @@ function displayFavorites(){
 
 //favorite / unfavorite a story
 
-async function toggleFavorite(evt){
+async function toggleFavorite(evt) {
   console.debug("toggleFavorite");
 
   const $tgt = $(evt.target);
   const $closestLi = $tgt.closest("li");
   const storyId = $closestLi.attr("id");
-  const story = storyList.stories.find(s => s.storyId === storyId);
+  const story = storyList.stories.find((s) => s.storyId === storyId);
 
   if ($tgt.hasClass("fas")) {
     await currentUser.removeFavorite(story);
-    $tgt.closest("i").toggleClass("fas far")
+    $tgt.closest("i").toggleClass("fas far");
   } else {
     await currentUser.addFavorite(story);
-    $tgt.closest("i").toggleClass("fas far")
+    $tgt.closest("i").toggleClass("fas far");
   }
 }
 
